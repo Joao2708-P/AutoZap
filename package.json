@@ -1,0 +1,33 @@
+{
+  "name": "from_fdm",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "seed": "node scripts/seed-perguntas.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.2.0",
+    "next": "^15.4.5",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "ts-node": "^10.9.2",
+    "venom": "^0.1.0",
+    "venom-bot": "^5.3.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/next": "^8.0.7",
+    "@types/node": "^20.19.9",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.4.4",
+    "tsx": "^4.20.3",
+    "typescript": "^5"
+  }
+}

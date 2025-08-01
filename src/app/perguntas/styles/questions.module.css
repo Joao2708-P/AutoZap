@@ -1,0 +1,75 @@
+/* Envolve toda a página */
+.wrapper {
+  min-height: 100vh;
+  background-color: #0d0d0d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* Caixa do formulário */
+.container {
+  width: 100%;
+  max-width: 600px;
+  background: #f3f3f3;
+  border-radius: 16px;
+  padding: 40px 24px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Título */
+.title {
+  text-align: center;
+  font-size: 26px;
+  color: #f97316;
+  font-weight: 700;
+  margin-bottom: 32px;
+}
+
+/* Formulário */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Label + input */
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.inputGroup label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 6px;
+}
+
+.inputGroup input {
+  padding: 12px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #111;
+}
+
+/* Botão */
+.submitBtn {
+  background-color: #f97316;
+  color: #fff;
+  padding: 14px;
+  font-weight: bold;
+  font-size: 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.submitBtn:hover {
+  background-color: #ea580c;
+  transform: translateY(-1px);
+}
