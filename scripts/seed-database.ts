@@ -25,7 +25,7 @@ perguntas.forEach(pergunta => {
 });
 
 // Verificar mensagens padrão
-const mensagensExistentes = db.prepare('SELECT COUNT(*) as total FROM mensagens WHERE tag = "disparo_automatico"').get() as any;
+const mensagensExistentes = db.prepare('SELECT COUNT(*) as total FROM mensagens WHERE tag = "disparo_automatico"').get() as { total: number };
 
 if (mensagensExistentes.total === 0) {
   console.log('💬 Inserindo mensagens padrão...');

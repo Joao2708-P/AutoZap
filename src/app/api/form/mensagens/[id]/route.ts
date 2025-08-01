@@ -4,10 +4,10 @@ import db from "@/app/lib/FDM";
 // GET - Buscar mensagem específica por ID
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: number } }
+    { params }: { params: { id: string } }
 ) {
     try {
-        const id = params.id;
+        const id = Number(params.id);
         const mensagem = db.prepare('SELECT * FROM mensagens WHERE id = ?').get(id);
 
         if (!mensagem) {
@@ -32,10 +32,10 @@ export async function GET(
 // PUT - Atualizar mensagem específica
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: number } }
+    { params }: { params: { id: string } }
 ) {
     try {
-        const id = params.id;
+        const id = Number(params.id);
         const { texto_mensagem, tag, ordermensagem } = await request.json();
 
         if (!texto_mensagem) {
@@ -73,10 +73,10 @@ export async function PUT(
 // DELETE - Deletar mensagem específica
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: number } }
+    { params }: { params: { id: string } }
 ) {
     try {
-        const id = params.id;
+        const id = Number(params.id);
         
         const mensagemExistente = db.prepare('SELECT * FROM mensagens WHERE id = ?').get(id);
         
