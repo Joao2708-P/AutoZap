@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         console.error('❌ Erro ao processar resposta:', error);
         return NextResponse.json(
-            { message: 'Erro ao processar resposta', error: error.message },
+            { message: 'Erro ao processar resposta', error: error && typeof error === 'object' && 'message' in error ? (error as any).message : 'Erro desconhecido' },
             { status: 500 }
         );
     }

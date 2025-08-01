@@ -4,11 +4,11 @@ import db from "@/app/lib/FDM";
 // GET - Buscar mensagem específica por ID
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const id = Number(params.id);
-        const mensagem = db.prepare('SELECT * FROM mensagens WHERE id = ?').get(id);
+        const { id } = await params;
+        const mensagem = db.prepare('SELECT * FROM mensagens WHERE id = ?').get(Number(id));
 
         if (!mensagem) {
             return NextResponse.json(
@@ -32,10 +32,10 @@ export async function GET(
 // PUT - Atualizar mensagem específica
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const id = Number(params.id);
+        const { id } = await params;
         const { texto_mensagem, tag, ordermensagem } = await request.json();
 
         if (!texto_mensagem) {
@@ -45,7 +45,7 @@ export async function PUT(
             );
         }
 
-        const mensagemExistente = db.prepare('SELECT * FROM mensagens WHERE id = ?').get(id);
+        const mensagemExistente = db.prepare('SELECT * FROM mensagens WHERE id = ?').get(Number(id));
         
         if (!mensagemExistente) {
             return NextResponse.json(
@@ -56,7 +56,7 @@ export async function PUT(
 
         const mensagemAtualizada = db.prepare(
             'UPDATE mensagens SET texto_mensagem = ?, tag = ?, ordermensagem = ? WHERE id = ?'
-        ).run(texto_mensagem, tag || null, ordermensagem || 0, id);
+        ).run(texto_mensagem, tag || null, ordermensagem || 0, Number(id));
 
         return NextResponse.json({ 
             message: 'Mensagem atualizada com sucesso',
@@ -73,12 +73,12 @@ export async function PUT(
 // DELETE - Deletar mensagem específica
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const id = Number(params.id);
+        const { id } = await params;
         
-        const mensagemExistente = db.prepare('SELECT * FROM mensagens WHERE id = ?').get(id);
+        const mensagemExistente = db.prepare('SELECT * FROM mensagens WHERE id = ?').get(Number(id));
         
         if (!mensagemExistente) {
             return NextResponse.json(
@@ -87,7 +87,7 @@ export async function DELETE(
             );
         }
 
-        db.prepare('DELETE FROM mensagens WHERE id = ?').run(id);
+        db.prepare('DELETE FROM mensagens WHERE id = ?').run(Number(id));
 
         return NextResponse.json({ 
             message: 'Mensagem deletada com sucesso' 

@@ -10,14 +10,14 @@ try {
   const db = new Database(dbPath);
   
   console.log('\n📋 Estrutura da tabela leads:');
-  const leadsInfo = db.prepare("PRAGMA table_info(leads)").all();
-  leadsInfo.forEach((column: { name: string; type: string }) => {
+  const leadsInfo = db.prepare("PRAGMA table_info(leads)").all() as Array<{ name: string; type: string }>;
+  leadsInfo.forEach((column) => {
     console.log(`  - ${column.name} (${column.type})`);
   });
 
   console.log('\n📋 Estrutura da tabela leads_finais:');
-  const tableInfo = db.prepare("PRAGMA table_info(leads_finais)").all();
-  tableInfo.forEach((column: { name: string; type: string }) => {
+  const tableInfo = db.prepare("PRAGMA table_info(leads_finais)").all() as Array<{ name: string; type: string }>;
+  tableInfo.forEach((column) => {
     console.log(`  - ${column.name} (${column.type})`);
   });
 
@@ -26,8 +26,8 @@ try {
   console.log(leadsFinais);
 
   console.log('\n👥 Leads existentes:');
-  const leads = db.prepare('SELECT id, nome, telefone FROM leads').all();
-  leads.forEach((lead: { id: number; nome: string; telefone: string }) => {
+  const leads = db.prepare('SELECT id, nome, telefone FROM leads').all() as Array<{ id: number; nome: string; telefone: string }>;
+  leads.forEach((lead) => {
     console.log(`  - ID: ${lead.id}, Nome: ${lead.nome}, Telefone: ${lead.telefone}`);
   });
 

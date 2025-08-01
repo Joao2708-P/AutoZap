@@ -10,7 +10,7 @@ export async function GET() {
             FROM leads_finais 
             WHERE atendente_telefone IS NOT NULL
             ORDER BY atendente_telefone
-        `).all();
+        `).all() as Array<{ atendente_telefone: string }>;
 
         return NextResponse.json({
             success: true,

@@ -68,7 +68,7 @@ try {
 } catch (error) {
   console.error('❌ Erro ao configurar banco:', error);
   
-  if (error.code === 'SQLITE_READONLY_DBMOVED') {
+  if (error && typeof error === 'object' && 'code' in error && error.code === 'SQLITE_READONLY_DBMOVED') {
     console.log('💡 Solução:');
     console.log('1. Pare o servidor (Ctrl+C)');
     console.log('2. Delete o arquivo do banco: rm src/app/data/automatize.sqlite');

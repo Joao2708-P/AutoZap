@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
         `).all();
 
         // Agrupar respostas por lead
-        const respostasPorLead = respostasLeads.reduce((acc, resp) => {
+        const respostasPorLead = respostasLeads.reduce((acc: Record<number, string[]>, resp: any) => {
             if (!acc[resp.lead_id]) {
                 acc[resp.lead_id] = [];
             }

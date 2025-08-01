@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
         const atendentes = db.prepare(query).all(...params);
 
         // Buscar leads detalhados se atendente específico
-        let leadsDetalhados = [];
+        let leadsDetalhados: Array<any> = [];
         if (atendente) {
             leadsDetalhados = db.prepare(`
                 SELECT 
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
                 WHERE lf.atendente_telefone = ?
                 AND DATE(lf.data_envio) = ?
                 ORDER BY lf.data_envio DESC
-            `).all(atendente, data);
+            `).all(atendente, data) as Array<any>;
         }
 
         return NextResponse.json({

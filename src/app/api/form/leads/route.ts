@@ -13,7 +13,7 @@ export async function GET() {
     } catch (error) {
         console.error('❌ Erro GET /api/form/leads:', error);
         return NextResponse.json(
-            { message: 'Erro ao buscar leads', error: error.message },
+            { message: 'Erro ao buscar leads', error: error && typeof error === 'object' && 'message' in error ? (error as any).message : 'Erro desconhecido' },
             { status: 500 }
         );
     }
@@ -63,10 +63,10 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         console.error('❌ Erro POST /api/form/leads:', error);
         return NextResponse.json(
-            { 
-                message: 'Erro ao criar lead', 
-                error: error.message,
-                stack: error.stack 
+            {
+                message: 'Erro ao criar lead',
+                error: error && typeof error === 'object' && 'message' in error ? (error as any).message : 'Erro desconhecido',
+                stack: error && typeof error === 'object' && 'stack' in error ? (error as any).stack : undefined
             },
             { status: 500 }
         );

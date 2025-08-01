@@ -40,7 +40,7 @@ export async function PUT(
         const idNumber = Number(id);
         const { usuario_id, numero_de_tentativas, ultima_tentativa, status_resposta } = await request.json();
 
-        const contatoExistente = db.prepare('SELECT * FROM contatos WHERE id = ?').get(idNumber);
+        const contatoExistente = db.prepare('SELECT * FROM contatos WHERE id = ?').get(idNumber) as any;
         
         if (!contatoExistente) {
             return NextResponse.json(

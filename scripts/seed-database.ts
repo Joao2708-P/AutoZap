@@ -50,8 +50,8 @@ if (mensagensExistentes.total === 0) {
 
 console.log('✅ Seed concluído com sucesso!');
 console.log('📊 Estatísticas:');
-console.log(`- Perguntas: ${db.prepare('SELECT COUNT(*) as total FROM perguntas').get().total}`);
-console.log(`- Mensagens: ${db.prepare('SELECT COUNT(*) as total FROM mensagens').get().total}`);
-console.log(`- Leads: ${db.prepare('SELECT COUNT(*) as total FROM leads').get().total}`);
+console.log(`- Perguntas: ${(db.prepare('SELECT COUNT(*) as total FROM perguntas').get() as { total: number }).total}`);
+console.log(`- Mensagens: ${(db.prepare('SELECT COUNT(*) as total FROM mensagens').get() as { total: number }).total}`);
+console.log(`- Leads: ${(db.prepare('SELECT COUNT(*) as total FROM leads').get() as { total: number }).total}`);
 
 process.exit(0); 

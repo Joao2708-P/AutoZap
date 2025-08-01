@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Verificar se o usuário existe
-        const usuario = db.prepare('SELECT * FROM usuarios WHERE id = ?').get(usuarioId);
+        const usuario = db.prepare('SELECT * FROM usuarios WHERE id = ?').get(usuarioId) as any;
         if (!usuario) {
             return NextResponse.json(
                 { message: 'Usuário não encontrado' },

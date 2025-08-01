@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import styles from './styles/questions.module.css';
 
@@ -14,7 +14,7 @@ interface Resposta {
   resposta_usuario: string;
 }
 
-const Questions = () => {
+const QuestionsContent = () => {
   const searchParams = useSearchParams();
   const leadId = searchParams.get('lead_id');
 
@@ -182,6 +182,20 @@ const Questions = () => {
         )}
       </div>
     </div>
+  );
+};
+
+const Questions = () => {
+  return (
+    <Suspense fallback={
+      <div className={styles.wrapper}>
+        <div className={styles.container}>
+          <p>Carregando...</p>
+        </div>
+      </div>
+    }>
+      <QuestionsContent />
+    </Suspense>
   );
 };
 
