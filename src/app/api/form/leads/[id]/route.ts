@@ -32,10 +32,10 @@ export async function GET(
 // PUT - Atualizar lead específico
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const id = params.id;
+        const { id } = await params;
         const { nome, telefone, email, modelo_de_negocio } = await request.json();
 
         if (!nome || !telefone || !email || !modelo_de_negocio) {
@@ -73,10 +73,10 @@ export async function PUT(
 // DELETE - Deletar lead específico
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const id = params.id;
+        const { id } = await params;
         
         const leadExistente = db.prepare('SELECT * FROM leads WHERE id = ?').get(id);
         

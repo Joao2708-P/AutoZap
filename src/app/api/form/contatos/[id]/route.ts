@@ -4,11 +4,12 @@ import db from "@/app/lib/FDM";
 // GET - Buscar contato específico por ID
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const id = Number(params.id);
-        const contato = db.prepare('SELECT * FROM contatos WHERE id = ?').get(id);
+        const { id } = await params;
+        const idNumber = Number(id);
+        const contato = db.prepare('SELECT * FROM contatos WHERE id = ?').get(idNumber);
 
         if (!contato) {
             return NextResponse.json(
@@ -32,13 +33,14 @@ export async function GET(
 // PUT - Atualizar contato específico
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const id = Number(params.id);
+        const { id } = await params;
+        const idNumber = Number(id);
         const { usuario_id, numero_de_tentativas, ultima_tentativa, status_resposta } = await request.json();
 
-        const contatoExistente = db.prepare('SELECT * FROM contatos WHERE id = ?').get(id);
+        const contatoExistente = db.prepare('SELECT * FROM contatos WHERE id = ?').get(idNumber);
         
         if (!contatoExistente) {
             return NextResponse.json(
@@ -65,7 +67,7 @@ export async function PUT(
             numero_de_tentativas || contatoExistente.numero_de_tentativas,
             ultima_tentativa || contatoExistente.ultima_tentativa,
             status_resposta || contatoExistente.status_resposta,
-            id
+            idNumber
         );
 
         return NextResponse.json({ 
@@ -83,12 +85,13 @@ export async function PUT(
 // DELETE - Deletar contato específico
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const id = Number(params.id);
+        const { id } = await params;
+        const idNumber = Number(id);
         
-        const contatoExistente = db.prepare('SELECT * FROM contatos WHERE id = ?').get(id);
+        const contatoExistente = db.prepare('SELECT * FROM contatos WHERE id = ?').get(idNumber);
         
         if (!contatoExistente) {
             return NextResponse.json(
@@ -97,7 +100,7 @@ export async function DELETE(
             );
         }
 
-        db.prepare('DELETE FROM contatos WHERE id = ?').run(id);
+        db.prepare('DELETE FROM contatos WHERE id = ?').run(idNumber);
 
         return NextResponse.json({ 
             message: 'Contato deletado com sucesso' 

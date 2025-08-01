@@ -105,7 +105,7 @@ async function processTextMessage(from: string, text: string) {
     console.log(`💬 Texto: "${text}"`);
 
     // Buscar lead pelo telefone
-    const lead = db.prepare('SELECT * FROM leads WHERE telefone = ?').get(from) as any;
+    const lead = db.prepare('SELECT * FROM leads WHERE telefone = ?').get(from) as { nome: string } | undefined;
     
     if (lead) {
       console.log('✅ Lead encontrado:', lead.nome);
@@ -156,7 +156,7 @@ async function processButtonMessage(from: string, buttonText: string) {
     console.log(`🔘 Botão: "${buttonText}"`);
 
     // Buscar lead pelo telefone
-    const lead = db.prepare('SELECT * FROM leads WHERE telefone = ?').get(from) as any;
+    const lead = db.prepare('SELECT * FROM leads WHERE telefone = ?').get(from) as { nome: string } | undefined;
     
     if (lead) {
       console.log('✅ Lead encontrado:', lead.nome);

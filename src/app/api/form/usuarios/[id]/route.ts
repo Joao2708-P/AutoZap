@@ -3,15 +3,16 @@ import db from "@/app/lib/FDM";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = Number(params.id);
-  if (isNaN(id)) {
+  const { id } = await params;
+  const idNumber = Number(id);
+  if (isNaN(idNumber)) {
     return NextResponse.json({ message: "ID inválido" }, { status: 400 });
   }
 
   try {
-    const usuario = db.prepare("SELECT * FROM usuarios WHERE id = ?").get(id);
+    const usuario = db.prepare("SELECT * FROM usuarios WHERE id = ?").get(idNumber);
 
     if (!usuario) {
       return NextResponse.json({ message: "Usuário não encontrado" }, { status: 404 });

@@ -47,7 +47,7 @@ export default function SimulacaoPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [simulationData, setSimulationData] = useState<SimulationData | null>(null);
   const [currentScenario, setCurrentScenario] = useState<string>('');
-  const [showHistory, setShowHistory] = useState(false);
+
   const [selectedLeadId, setSelectedLeadId] = useState<number | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [showLeadSelector, setShowLeadSelector] = useState(false);
@@ -109,7 +109,7 @@ export default function SimulacaoPage() {
         
         // Usar as mensagens reais da API
         if (data.messages && data.messages.length > 0) {
-          data.messages.forEach((message: any, index: number) => {
+          data.messages.forEach((message: NonNullable<SimulationData['messages']>[0], index: number) => {
             const delay = (index + 1) * 2000; // 2 segundos entre cada mensagem
             addMessage(message.text, message.sender, delay);
           });
@@ -176,7 +176,6 @@ export default function SimulacaoPage() {
       
       if (data.success && data.messages.length > 0) {
         setMessages(data.messages);
-        setShowHistory(true);
         setCurrentScenario('Histórico de Simulações Anteriores');
       } else {
         setCurrentScenario('Nenhum histórico disponível');
@@ -189,7 +188,6 @@ export default function SimulacaoPage() {
 
   const clearMessages = () => {
     setMessages([]);
-    setShowHistory(false);
     setCurrentScenario('');
   };
 
@@ -351,7 +349,7 @@ export default function SimulacaoPage() {
             <div className={styles.emptyState}>
                            <div className={styles.emptyIcon}>💬</div>
              <h3>Nenhum atendimento ainda</h3>
-             <p>Clique em "Simular Atendimento" para ver como funciona!</p>
+             <p>Clique em &quot;Simular Atendimento&quot; para ver como funciona!</p>
             </div>
           )}
 

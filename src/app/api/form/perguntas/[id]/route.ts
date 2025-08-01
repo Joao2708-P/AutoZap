@@ -4,11 +4,12 @@ import db from "@/app/lib/FDM";
 // GET - Buscar pergunta específica por ID
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const id = Number(params.id);
-        const pergunta = db.prepare('SELECT * FROM perguntas WHERE id = ?').get(id);
+        const { id } = await params;
+        const idNumber = Number(id);
+        const pergunta = db.prepare('SELECT * FROM perguntas WHERE id = ?').get(idNumber);
 
         if (!pergunta) {
             return NextResponse.json(
@@ -32,10 +33,11 @@ export async function GET(
 // PUT - Atualizar pergunta específica
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const id = Number(params.id);
+        const { id } = await params;
+        const idNumber = Number(id);
         const { texto_pergunta, resposta_usuario, usuario_id } = await request.json();
 
         if (!texto_pergunta) {
@@ -45,7 +47,7 @@ export async function PUT(
             );
         }
 
-        const perguntaExistente = db.prepare('SELECT * FROM perguntas WHERE id = ?').get(id);
+        const perguntaExistente = db.prepare('SELECT * FROM perguntas WHERE id = ?').get(idNumber);
         
         if (!perguntaExistente) {
             return NextResponse.json(
@@ -56,7 +58,7 @@ export async function PUT(
 
         const perguntaAtualizada = db.prepare(
             'UPDATE perguntas SET texto_pergunta = ?, resposta_usuario = ?, usuario_id = ? WHERE id = ?'
-        ).run(texto_pergunta, resposta_usuario || null, usuario_id, id);
+        ).run(texto_pergunta, resposta_usuario || null, usuario_id, idNumber);
 
         return NextResponse.json({ 
             message: 'Pergunta atualizada com sucesso',
@@ -73,12 +75,13 @@ export async function PUT(
 // DELETE - Deletar pergunta específica
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const id = Number(params.id);
+        const { id } = await params;
+        const idNumber = Number(id);
         
-        const perguntaExistente = db.prepare('SELECT * FROM perguntas WHERE id = ?').get(id);
+        const perguntaExistente = db.prepare('SELECT * FROM perguntas WHERE id = ?').get(idNumber);
         
         if (!perguntaExistente) {
             return NextResponse.json(
@@ -87,7 +90,7 @@ export async function DELETE(
             );
         }
 
-        db.prepare('DELETE FROM perguntas WHERE id = ?').run(id);
+        db.prepare('DELETE FROM perguntas WHERE id = ?').run(idNumber);
 
         return NextResponse.json({ 
             message: 'Pergunta deletada com sucesso' 

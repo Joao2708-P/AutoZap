@@ -27,8 +27,8 @@ export async function GET(request: NextRequest) {
             SELECT COUNT(*) as total FROM mensagens 
             WHERE tag = 'resposta_lead' 
             AND DATE('now') = DATE('now')
-        `).get() as any;
-        const taxaResposta = totalDisparos > 0 ? (respostasHoje.total / totalDisparos * 100).toFixed(2) : '0';
+        `).get() as { total: number } | undefined;
+        const taxaResposta = totalDisparos > 0 ? ((respostasHoje?.total || 0) / totalDisparos * 100).toFixed(2) : '0';
 
         // Leads ativos no sistema
         const leadsAtivos = db.prepare(`
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
             data: data,
             estatisticas: {
                 total_disparos: totalDisparos,
-                disparos_respondidos: respostasHoje.total,
+                disparos_respondidos: respostasHoje?.total || 0,
                 taxa_resposta: `${taxaResposta}%`,
                 leads_ativos: leadsAtivos.length,
                 leads_respondidos_hoje: leadsRespondidosHoje.length

@@ -23,10 +23,11 @@ interface SimulationMessage {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const leadId = parseInt(params.id);
+    const { id } = await params;
+    const leadId = parseInt(id);
     
     if (isNaN(leadId)) {
       return NextResponse.json({
@@ -57,7 +58,7 @@ export async function GET(
     }
 
     // Buscar perguntas e respostas reais do lead (removido - não usado na simulação)
-    const respostas = [] as any[];
+    const respostas: never[] = [];
 
     // Array para armazenar todas as mensagens da simulação
     const simulationMessages: SimulationMessage[] = [];

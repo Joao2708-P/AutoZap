@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Mensagem é obrigatória' }, { status: 400 });
     }
 
-    const lead = db.prepare('SELECT * FROM leads WHERE id = ?').get(leadId) as any;
+    const lead = db.prepare('SELECT * FROM leads WHERE id = ?').get(leadId) as { nome: string; telefone: string } | undefined;
     if (!lead) {
       return NextResponse.json({ error: 'Lead não encontrado' }, { status: 404 });
     }

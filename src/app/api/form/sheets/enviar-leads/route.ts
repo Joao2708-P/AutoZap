@@ -44,12 +44,12 @@ export async function POST(request: NextRequest) {
             }
             acc[resp.lead_id].push(`${resp.texto_pergunta}: ${resp.resposta_usuario}`);
             return acc;
-        }, {} as any);
+        }, {} as Record<number, string[]>);
 
         // Preparar dados para o sheet
         const dadosSheet = leadsParaEnviar.map(lead => {
             const respostas = respostasPorLead[lead.id] || [];
-            const contato = db.prepare('SELECT * FROM contatos WHERE lead_id = ?').get(lead.id) as any;
+            const contato = db.prepare('SELECT * FROM contatos WHERE lead_id = ?').get(lead.id) as { numero_de_tentativas?: number; status_resposta?: string; ultima_tentativa?: string } | undefined;
             
             return [
                 lead.nome,

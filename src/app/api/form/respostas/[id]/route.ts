@@ -4,10 +4,10 @@ import db from "@/app/lib/FDM";
 // GET - Buscar resposta específica por ID
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const id = params.id;
+        const { id } = await params;
         const resposta = db.prepare(`
             SELECT r.*, p.texto_pergunta, l.nome as nome_lead 
             FROM respostas r 
@@ -38,10 +38,10 @@ export async function GET(
 // PUT - Atualizar resposta específica
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const id = params.id;
+        const { id } = await params;
         const { resposta_usuario } = await request.json();
 
         if (!resposta_usuario) {
@@ -79,10 +79,10 @@ export async function PUT(
 // DELETE - Deletar resposta específica
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const id = params.id;
+        const { id } = await params;
         
         const respostaExistente = db.prepare('SELECT * FROM respostas WHERE id = ?').get(id);
         

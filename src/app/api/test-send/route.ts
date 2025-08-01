@@ -15,7 +15,7 @@ async function sendLead() {
     console.log('🧪 Teste de envio manual iniciado...');
     
     // Buscar o último lead criado
-    const lead = db.prepare('SELECT * FROM leads ORDER BY id DESC LIMIT 1').get() as any;
+    const lead = db.prepare('SELECT * FROM leads ORDER BY id DESC LIMIT 1').get() as { nome: string; email: string; telefone: string; id: number } | undefined;
     
     if (!lead) {
       return NextResponse.json({ error: 'Nenhum lead encontrado' }, { status: 404 });
@@ -33,7 +33,7 @@ async function sendLead() {
       JOIN perguntas p ON r.pergunta_id = p.id
       WHERE r.lead_id = ?
       ORDER BY p.ordem
-    `).all(lead.id) as any[];
+    `).all(lead.id) as Array<{ resposta_usuario: string; texto_pergunta: string; ordem: number }>;
 
     console.log('📝 Respostas encontradas:', respostas.length);
 
@@ -42,7 +42,7 @@ async function sendLead() {
       nome: lead.nome,
       email: lead.email,
       telefone: lead.telefone,
-      respostas: respostas.map((r: any) => ({
+      respostas: respostas.map((r: { texto_pergunta: string; resposta_usuario: string }) => ({
         pergunta: r.texto_pergunta,
         resposta: r.resposta_usuario
       })),

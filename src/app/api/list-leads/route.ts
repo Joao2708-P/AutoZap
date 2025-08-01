@@ -3,7 +3,14 @@ import db from '@/app/lib/FDM';
 
 export async function GET() {
   try {
-    const leads = db.prepare('SELECT * FROM leads ORDER BY id DESC').all() as any[];
+    const leads = db.prepare('SELECT * FROM leads ORDER BY id DESC').all() as Array<{
+      id: number;
+      nome: string;
+      email: string;
+      telefone: string;
+      modelo_de_negocio: string;
+      primeiro_contato_enviado: boolean;
+    }>;
     
     return NextResponse.json({
       success: true,

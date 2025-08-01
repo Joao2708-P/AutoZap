@@ -4,10 +4,10 @@ import { whatsappMeta } from '@/app/lib/whatsapp-meta';
 export async function GET() {
   try {
     // Obter o histórico de mensagens da simulação
-    const messageHistory = (whatsappMeta as any).messageHistory || [];
+    const messageHistory = (whatsappMeta as { messageHistory?: Array<{ message: string; type: string; timestamp: Date }> }).messageHistory || [];
     
     // Formatar as mensagens para a interface
-    const formattedMessages = messageHistory.map((msg: any, index: number) => ({
+    const formattedMessages = messageHistory.map((msg: { message: string; type: string; timestamp: Date }, index: number) => ({
       id: index.toString(),
       text: msg.message,
       sender: msg.type === 'sent' ? 'system' : 'user',
