@@ -1,4 +1,4 @@
-# 🤖 Automatize - Sistema de Automação WhatsApp
+# 🤖 AutoZap - Sistema de Automação WhatsApp
 
 Sistema completo para automatizar contatos no WhatsApp com inteligência, incluindo cadastro de leads, questionários e disparos automáticos.
 
