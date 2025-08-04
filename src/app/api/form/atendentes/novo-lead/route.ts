@@ -17,19 +17,28 @@ interface Resposta {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('🚀 [API] Iniciando processamento novo-lead...');
+    
     const body = await request.json();
     const { leadId } = body;
+    console.log('📝 [API] Lead ID recebido:', leadId);
 
     if (!leadId) {
+      console.log('❌ [API] Lead ID não fornecido');
       return NextResponse.json({ error: 'Lead ID é obrigatório' }, { status: 400 });
     }
 
+    console.log('🔍 [API] Buscando lead no banco de dados...');
     const leads = await db.prepare('SELECT * FROM leads WHERE id = ?').all([leadId]) as Lead[];
     const lead = leads[0];
+    console.log('📊 [API] Lead encontrado:', lead ? 'Sim' : 'Não');
+    
     if (!lead) {
+      console.log('❌ [API] Lead não encontrado no banco');
       return NextResponse.json({ error: 'Lead não encontrado' }, { status: 404 });
     }
 
+    console.log('🔍 [API] Buscando respostas do questionário...');
     const respostas = await db.prepare(`
       SELECT
         r.resposta_usuario,
@@ -40,6 +49,7 @@ export async function POST(request: NextRequest) {
       WHERE r.lead_id = ?
       ORDER BY p.ordem
     `).all([leadId]) as Resposta[];
+    console.log('📊 [API] Respostas encontradas:', respostas?.length || 0);
 
     const dadosFormatados = `
 🎯 *NOVO LEAD RECEBIDO!*
@@ -71,17 +81,21 @@ ${respostas.map((r: Resposta, index: number) =>
     `;
 
     try {
+      console.log('📱 [API] Iniciando envio via WhatsApp...');
       const resultadoEnvio = await whatsappMeta.sendMessage(
         '19995357442',
         dadosFormatados
       );
+      console.log('📊 [API] Resultado do envio WhatsApp:', resultadoEnvio);
 
       if (resultadoEnvio) {
+        console.log('✅ [API] WhatsApp enviado, atualizando status...');
         // Atualizar status na tabela leads_finais
         await db.prepare(`
           INSERT OR REPLACE INTO leads_finais (lead_id, status)
           VALUES (?, 'enviado_para_atendente')
         `).run([leadId]);
+        console.log('✅ [API] Status atualizado no banco');
 
         return NextResponse.json({
           success: true,
@@ -90,6 +104,7 @@ ${respostas.map((r: Resposta, index: number) =>
           method: 'Meta API'
         });
       } else {
+        console.log('⚠️ [API] WhatsApp falhou, usando fallback...');
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         return NextResponse.json({
@@ -100,16 +115,21 @@ ${respostas.map((r: Resposta, index: number) =>
         });
       }
     } catch (error) {
+      console.error('❌ [API] Erro no envio WhatsApp:', error);
       return NextResponse.json({
         success: false,
-        message: 'Erro interno ao enviar para atendente'
+        message: 'Erro interno ao enviar para atendente',
+        error: error instanceof Error ? error.message : 'Erro desconhecido'
       }, { status: 500 });
     }
 
   } catch (error) {
+    console.error('❌ [API] Erro geral na rota novo-lead:', error);
     return NextResponse.json({
       success: false,
-      message: 'Erro interno do servidor'
+      message: 'Erro interno do servidor',
+      error: error instanceof Error ? error.message : 'Erro desconhecido',
+      stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined
     }, { status: 500 });
   }
 } 

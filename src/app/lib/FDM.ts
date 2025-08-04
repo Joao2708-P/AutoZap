@@ -57,6 +57,17 @@ const db = {
     
     all: async (params?: any[]) => {
       // Converter SQL para operação Supabase  
+      if (sql.includes('SELECT * FROM leads WHERE id')) {
+        const leadId = params?.[0];
+        const { data, error } = await supabase
+          .from('leads')
+          .select('*')
+          .eq('id', leadId);
+          
+        if (error) throw error;
+        return data || [];
+      }
+      
       if (sql.includes('SELECT * FROM leads')) {
         const { data, error } = await supabase.from('leads').select('*');
         if (error) throw error;
@@ -119,8 +130,9 @@ const db = {
       if (sql.includes('JOIN') && sql.includes('FROM respostas r')) {
         console.log('🔍 FDM: Query com JOIN respostas...');
         
-        // Query: respostas com perguntas
-        const { data: respostas, error } = await supabase
+        // Se tem WHERE r.lead_id = ?, filtrar por lead_id
+        const leadId = params?.[0];
+        let query = supabase
           .from('respostas')
           .select(`
             *,
@@ -130,6 +142,18 @@ const db = {
               ordem
             )
           `);
+          
+        // Aplicar filtro se leadId foi fornecido
+        if (leadId && sql.includes('WHERE r.lead_id')) {
+          query = query.eq('lead_id', leadId);
+        }
+        
+        // Aplicar ordenação se especificada
+        if (sql.includes('ORDER BY p.ordem')) {
+          query = query.order('ordem', { foreignTable: 'perguntas', ascending: true });
+        }
+        
+        const { data: respostas, error } = await query;
           
         if (error) {
           console.error('❌ FDM: Erro no JOIN respostas:', error);
