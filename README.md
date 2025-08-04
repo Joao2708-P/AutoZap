@@ -9,7 +9,7 @@ Sistema completo para automatizar contatos no WhatsApp com inteligência, inclui
 - ✅ **Disparos Automáticos** - Sequência de mensagens automáticas
 - ✅ **Integração WhatsApp** - Via Baileys (estável) ou Meta API (oficial)
 - ✅ **Relatórios** - Acompanhamento de conversões
-- ✅ **Banco SQLite** - Armazenamento local dos dados
+- ✅ **Banco PostgreSQL** - Supabase para armazenamento em nuvem
 
 ## 📋 Pré-requisitos
 

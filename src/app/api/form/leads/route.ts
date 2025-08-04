@@ -4,7 +4,7 @@ import db from "@/app/lib/FDM";
 // GET - Listar todos os leads
 export async function GET() {
     try {
-        const leads = db.prepare('SELECT * FROM leads').all();
+        const leads = await db.prepare('SELECT * FROM leads').all();
         
         return NextResponse.json({ 
             message: 'Leads encontrados',
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
         console.log('💾 Inserindo lead no banco...');
         
         // Verificar se o email já existe
-        const leadExistente = db.prepare('SELECT id FROM leads WHERE email = ?').get(email);
+        const leadExistente = await db.prepare('SELECT id FROM leads WHERE email = $1').get([email]);
         if (leadExistente) {
             console.log('⚠️ Email já cadastrado:', email);
             return NextResponse.json(
@@ -50,9 +50,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const novoLead = db.prepare(
-            'INSERT INTO leads (nome, telefone, email, modelo_de_negocio) VALUES (?, ?, ?, ?)'
-        ).run(nome, telefone, email, modelo_de_negocio);
+        const novoLead = await db.prepare(
+            'INSERT INTO leads (nome, telefone, email, modelo_de_negocio) VALUES ($1, $2, $3, $4) RETURNING id'
+        ).run([nome, telefone, email, modelo_de_negocio]);
 
         console.log('✅ Lead criado com sucesso! ID:', novoLead.lastInsertRowid);
 
