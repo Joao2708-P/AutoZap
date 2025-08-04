@@ -30,7 +30,7 @@ const db = {
     },
     
     all: async (params?: any[]) => {
-      // Converter SQL para operação Supabase
+      // Converter SQL para operação Supabase  
       if (sql.includes('SELECT * FROM leads')) {
         const { data, error } = await supabase.from('leads').select('*');
         if (error) throw error;
@@ -46,6 +46,46 @@ const db = {
       if (sql.includes('SELECT * FROM mensagens')) {
         const { data, error } = await supabase.from('mensagens').select('*');
         if (error) throw error;
+        return data || [];
+      }
+      
+      // Perguntas específicas para exibir (ativas, ordenadas)
+      if (sql.includes('SELECT id, texto_pergunta, ordem') && sql.includes('FROM perguntas')) {
+        console.log('🔍 FDM: Executando query de perguntas...');
+        
+        const { data, error } = await supabase
+          .from('perguntas')
+          .select('id, texto_pergunta, ordem')
+          .eq('ativa', true)
+          .order('ordem', { ascending: true })
+          .order('created_at', { ascending: true });
+        
+        if (error) {
+          console.error('❌ FDM: Erro na query perguntas:', error);
+          throw error;
+        }
+        
+        console.log('✅ FDM: Perguntas encontradas:', data?.length || 0);
+        return data || [];
+      }
+      
+      // Query geral de perguntas com WHERE ativa = 1 (SQLite style)
+      if (sql.includes('WHERE ativa = 1') && sql.includes('FROM perguntas')) {
+        console.log('🔍 FDM: Query perguntas com ativa = 1...');
+        
+        const { data, error } = await supabase
+          .from('perguntas')
+          .select('id, texto_pergunta, ordem')
+          .eq('ativa', true)
+          .order('ordem', { ascending: true })
+          .order('created_at', { ascending: true });
+        
+        if (error) {
+          console.error('❌ FDM: Erro na query ativa=1:', error);
+          throw error;
+        }
+        
+        console.log('✅ FDM: Perguntas ativas encontradas:', data?.length || 0);
         return data || [];
       }
       

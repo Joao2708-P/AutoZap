@@ -25,23 +25,42 @@ const QuestionsContent = () => {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
+    console.log('🔄 Frontend: useEffect executado, leadId:', leadId);
     if (leadId) {
       carregarPerguntas();
+    } else {
+      console.log('⚠️ Frontend: leadId não encontrado na URL');
+      setMessage('ID do lead não encontrado na URL. Acesse através do formulário de cadastro.');
+      setLoading(false);
     }
   }, [leadId]);
 
   const carregarPerguntas = async () => {
     try {
+      console.log('🔍 Frontend: Carregando perguntas...');
+      
       const response = await fetch('/api/form/perguntas/exibir');
       const data = await response.json();
       
+      console.log('📡 Frontend: Response status:', response.status);
+      console.log('📋 Frontend: Data recebida:', data);
+      
       if (response.ok) {
-        setPerguntas(data.perguntas);
+        // Garantir que sempre seja um array
+        const perguntasArray = Array.isArray(data.perguntas) ? data.perguntas : [];
+        console.log('✅ Frontend: Perguntas processadas:', perguntasArray);
+        setPerguntas(perguntasArray);
+        
+        if (perguntasArray.length === 0) {
+          setMessage('Nenhuma pergunta ativa encontrada. Verifique se as perguntas estão marcadas como ativas.');
+        }
       } else {
-        setMessage('Erro ao carregar perguntas');
+        console.error('❌ Frontend: Erro na API:', data);
+        setMessage(`Erro ao carregar perguntas: ${data.message || 'Erro desconhecido'}`);
       }
     } catch (error) {
-      setMessage('Erro ao carregar perguntas');
+      console.error('❌ Frontend: Erro de conexão:', error);
+      setMessage('Erro ao carregar perguntas - verifique sua conexão');
     } finally {
       setLoading(false);
     }
@@ -151,7 +170,7 @@ const QuestionsContent = () => {
           </div>
         )}
 
-        {perguntas.length === 0 ? (
+        {!perguntas || perguntas.length === 0 ? (
           <p>Nenhuma pergunta disponível no momento.</p>
         ) : (
           <form className={styles.form} onSubmit={handleSubmit}>

@@ -11,7 +11,10 @@
     "migrate": "tsx scripts/migrate-to-postgres.ts",
     "migrate-supabase": "tsx scripts/migrate-supabase.ts",
     "create-tables": "tsx scripts/create-supabase-tables.ts",
-    "generate-types": "tsx scripts/generate-types.ts"
+    "generate-types": "tsx scripts/generate-types.ts",
+    "debug": "tsx scripts/debug-supabase.ts",
+    "seed-perguntas": "tsx scripts/seed-perguntas.ts",
+    "test-perguntas": "tsx scripts/test-perguntas-api.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
