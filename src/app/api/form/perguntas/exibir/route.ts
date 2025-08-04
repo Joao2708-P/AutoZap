@@ -4,7 +4,7 @@ import db from "@/app/lib/FDM";
 // GET - Exibir perguntas para o usuário
 export async function GET() {
     try {
-        console.log('🔍 API Perguntas: Iniciando busca...');
+        // console.log('🔍 API Perguntas: Iniciando busca...');
         
         const perguntas = await db.prepare(`
             SELECT id, texto_pergunta, ordem
@@ -13,7 +13,7 @@ export async function GET() {
             ORDER BY ordem ASC, created_at ASC
         `).all();
         
-        console.log('✅ API Perguntas: Encontradas', perguntas?.length || 0, 'perguntas');
+        // console.log('✅ API Perguntas: Encontradas', perguntas?.length || 0, 'perguntas');
         
         return NextResponse.json({ 
             message: 'Perguntas encontradas',

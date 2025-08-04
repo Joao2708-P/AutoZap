@@ -26,6 +26,32 @@ const db = {
         return data;
       }
       
+      // SELECT específicos de leads_finais
+      if (sql.includes('SELECT * FROM leads_finais WHERE lead_id')) {
+        const leadId = params?.[0];
+        const { data, error } = await supabase
+          .from('leads_finais')
+          .select('*')
+          .eq('lead_id', leadId)
+          .single();
+          
+        if (error && error.code !== 'PGRST116') throw error;
+        return data;
+      }
+      
+      // SELECT leads específico por ID
+      if (sql.includes('SELECT * FROM leads WHERE id')) {
+        const leadId = params?.[0];
+        const { data, error } = await supabase
+          .from('leads')
+          .select('*')
+          .eq('id', leadId)
+          .single();
+          
+        if (error && error.code !== 'PGRST116') throw error;
+        return data;
+      }
+      
       return null;
     },
     
@@ -51,7 +77,7 @@ const db = {
       
       // Perguntas específicas para exibir (ativas, ordenadas)
       if (sql.includes('SELECT id, texto_pergunta, ordem') && sql.includes('FROM perguntas')) {
-        console.log('🔍 FDM: Executando query de perguntas...');
+        // console.log('🔍 FDM: Executando query de perguntas...');
         
         const { data, error } = await supabase
           .from('perguntas')
@@ -65,7 +91,7 @@ const db = {
           throw error;
         }
         
-        console.log('✅ FDM: Perguntas encontradas:', data?.length || 0);
+        // console.log('✅ FDM: Perguntas encontradas:', data?.length || 0);
         return data || [];
       }
       
@@ -87,6 +113,73 @@ const db = {
         
         console.log('✅ FDM: Perguntas ativas encontradas:', data?.length || 0);
         return data || [];
+      }
+      
+      // JOINs complexos - precisam ser tratados
+      if (sql.includes('JOIN') && sql.includes('FROM respostas r')) {
+        console.log('🔍 FDM: Query com JOIN respostas...');
+        
+        // Query: respostas com perguntas
+        const { data: respostas, error } = await supabase
+          .from('respostas')
+          .select(`
+            *,
+            perguntas!inner (
+              id,
+              texto_pergunta,
+              ordem
+            )
+          `);
+          
+        if (error) {
+          console.error('❌ FDM: Erro no JOIN respostas:', error);
+          throw error;
+        }
+        
+        // Transformar para formato esperado pelo código antigo
+        const resultado = respostas?.map(r => ({
+          lead_id: r.lead_id,
+          texto_pergunta: r.perguntas?.texto_pergunta,
+          resposta_usuario: r.resposta_usuario,
+          ordem: r.perguntas?.ordem
+        })) || [];
+        
+        console.log('✅ FDM: JOIN respostas processado:', resultado.length);
+        return resultado;
+      }
+      
+      // Query leads com LEFT JOIN contatos
+      if (sql.includes('LEFT JOIN contatos c') && sql.includes('FROM leads l')) {
+        console.log('🔍 FDM: Query leads com contatos...');
+        
+        const { data: leads, error } = await supabase
+          .from('leads')
+          .select(`
+            *,
+            contatos (
+              numero_de_tentativas,
+              status_resposta,
+              ultima_tentativa
+            )
+          `)
+          .eq('primeiro_contato', true)
+          .order('id', { ascending: false });
+          
+        if (error) {
+          console.error('❌ FDM: Erro no JOIN leads:', error);
+          throw error;
+        }
+        
+        // Transformar para formato esperado
+        const resultado = leads?.map(l => ({
+          ...l,
+          numero_de_tentativas: l.contatos?.[0]?.numero_de_tentativas || null,
+          status_resposta: l.contatos?.[0]?.status_resposta || null,
+          ultima_tentativa: l.contatos?.[0]?.ultima_tentativa || null
+        })) || [];
+        
+        console.log('✅ FDM: JOIN leads processado:', resultado.length);
+        return resultado;
       }
       
       return [];
@@ -159,6 +252,84 @@ const db = {
           changes: 1,
           lastInsertRowid: data?.id || null
         };
+      }
+      
+      // INSERT OR REPLACE (PostgreSQL não suporta)
+      if (sql.includes('INSERT OR REPLACE INTO leads_finais')) {
+        console.log('🔍 FDM: INSERT OR REPLACE leads_finais...');
+        
+        const [leadId, status] = params || [];
+        
+        // Verificar se existe
+        const { data: existing } = await supabase
+          .from('leads_finais')
+          .select('id')
+          .eq('lead_id', leadId)
+          .single();
+        
+        if (existing) {
+          // UPDATE
+          const { error } = await supabase
+            .from('leads_finais')
+            .update({ status })
+            .eq('lead_id', leadId);
+            
+          if (error) throw error;
+        } else {
+          // INSERT
+          const { data, error } = await supabase
+            .from('leads_finais')
+            .insert({ lead_id: leadId, status })
+            .select()
+            .single();
+            
+          if (error) throw error;
+        }
+        
+        return { changes: 1, lastInsertRowid: leadId };
+      }
+      
+      // UPDATE leads_finais
+      if (sql.includes('UPDATE leads_finais')) {
+        console.log('🔍 FDM: UPDATE leads_finais...');
+        
+        const { error } = await supabase
+          .from('leads_finais')
+          .update({
+            status: params?.[0],
+            atendente_telefone: params?.[1],
+            data_envio: params?.[2]
+          })
+          .eq('lead_id', params?.[3]);
+          
+        if (error) throw error;
+        return { changes: 1, lastInsertRowid: null };
+      }
+      
+      // INSERT INTO leads_finais (completo)
+      if (sql.includes('INSERT INTO leads_finais') && sql.includes('respostas_json')) {
+        console.log('🔍 FDM: INSERT leads_finais completo...');
+        
+        const [leadId, nome, telefone, email, modelo_de_negocio, respostasJson, dataEnvio, status, atendenteTelefone] = params || [];
+        
+        const { data, error } = await supabase
+          .from('leads_finais')
+          .insert({
+            lead_id: leadId,
+            nome,
+            telefone,
+            email,
+            modelo_de_negocio,
+            respostas_json: respostasJson,
+            data_envio: dataEnvio,
+            status,
+            atendente_telefone: atendenteTelefone
+          })
+          .select()
+          .single();
+          
+        if (error) throw error;
+        return { changes: 1, lastInsertRowid: data?.id || null };
       }
       
       return { changes: 0, lastInsertRowid: null };
