@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "seed": "node scripts/seed-perguntas.js",
-    "migrate": "tsx scripts/migrate-to-postgres.ts"
+    "migrate": "tsx scripts/migrate-to-postgres.ts",
+    "migrate-supabase": "tsx scripts/migrate-supabase.ts"
   },
   "dependencies": {
     "next": "^15.4.5",

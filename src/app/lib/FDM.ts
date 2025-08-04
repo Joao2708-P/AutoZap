@@ -28,7 +28,7 @@ const db = {
   }
 };
 
-// Inicializar tabelas ao importar o módulo
-initializeTables().catch(console.error);
+// Comentando inicialização automática - tabelas criadas manualmente no Supabase
+// initializeTables().catch(console.error);
 
 export default db
