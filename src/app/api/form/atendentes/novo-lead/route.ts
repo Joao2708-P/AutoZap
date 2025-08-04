@@ -90,11 +90,27 @@ ${respostas.map((r: Resposta, index: number) =>
 
       if (resultadoEnvio) {
         console.log('✅ [API] WhatsApp enviado, atualizando status...');
-        // Atualizar status na tabela leads_finais
+        
+        // Preparar respostas em JSON
+        const respostasJson = JSON.stringify(respostas.map(r => ({
+          pergunta: r.texto_pergunta,
+          resposta: r.resposta_usuario,
+          ordem: r.ordem
+        })));
+        
+        // Inserir todos os dados obrigatórios na tabela leads_finais
         await db.prepare(`
-          INSERT OR REPLACE INTO leads_finais (lead_id, status)
-          VALUES (?, 'enviado_para_atendente')
-        `).run([leadId]);
+          INSERT OR REPLACE INTO leads_finais (
+            lead_id, nome, telefone, email, modelo_de_negocio, respostas_json, status
+          ) VALUES (?, ?, ?, ?, ?, ?, 'enviado_para_atendente')
+        `).run([
+          leadId, 
+          lead.nome, 
+          lead.telefone, 
+          lead.email, 
+          lead.modelo_de_negocio || 'Não informado', 
+          respostasJson
+        ]);
         console.log('✅ [API] Status atualizado no banco');
 
         return NextResponse.json({
