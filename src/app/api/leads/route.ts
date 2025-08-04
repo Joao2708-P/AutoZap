@@ -13,7 +13,7 @@ interface Lead {
 
 export async function GET() {
   try {
-    const leads = db.prepare(`
+    const leads = await db.prepare(`
       SELECT 
         l.*,
         COUNT(r.id) as total_respostas

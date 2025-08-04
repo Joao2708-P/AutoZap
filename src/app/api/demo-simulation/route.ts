@@ -19,7 +19,7 @@ interface Resposta {
 
 export async function GET() {
   try {
-    const leads = db.prepare('SELECT * FROM leads ORDER BY id DESC LIMIT 1').all() as Lead[];
+    const leads = await db.prepare('SELECT * FROM leads ORDER BY id DESC LIMIT 1').all() as Lead[];
     
     if (leads.length === 0) {
       return NextResponse.json({
@@ -31,7 +31,7 @@ export async function GET() {
 
     const lead = leads[0];
 
-    const respostas = db.prepare(`
+    const respostas = await db.prepare(`
       SELECT
         r.resposta_usuario,
         p.texto_pergunta,
@@ -40,7 +40,7 @@ export async function GET() {
       JOIN perguntas p ON r.pergunta_id = p.id
       WHERE r.lead_id = ?
       ORDER BY p.ordem
-    `).all(lead.id) as Resposta[];
+    `).all([lead.id]) as Resposta[];
 
     // Enviar primeiro contato sempre
     const primeiroContato = `Olá ${lead.nome}! 👋\n\nObrigado por se cadastrar em nosso sistema!\n\nVou analisar suas respostas e um de nossos especialistas entrará em contato em breve.\n\nEnquanto isso, que tal conhecer nossos serviços?\n\n💼 Automação de Marketing\n📊 Relatórios Avançados\n🎯 Segmentação Inteligente`;

@@ -182,6 +182,77 @@ const db = {
         return resultado;
       }
       
+      // Query específica da API /api/leads (com COUNT)
+      if (sql.includes('COUNT(r.id) as total_respostas') && sql.includes('LEFT JOIN respostas')) {
+        console.log('🔍 FDM: Query leads com count respostas...');
+        
+        // Buscar leads primeiro
+        const { data: leads, error: leadsError } = await supabase
+          .from('leads')
+          .select('*')
+          .order('id', { ascending: false });
+          
+        if (leadsError) {
+          console.error('❌ FDM: Erro ao buscar leads:', leadsError);
+          throw leadsError;
+        }
+        
+        // Para cada lead, contar respostas
+        const resultado = [];
+        for (const lead of leads || []) {
+          const { count, error: countError } = await supabase
+            .from('respostas')
+            .select('*', { count: 'exact', head: true })
+            .eq('lead_id', lead.id);
+            
+          if (countError) {
+            console.error('❌ FDM: Erro ao contar respostas:', countError);
+          }
+          
+          resultado.push({
+            ...lead,
+            total_respostas: count || 0
+          });
+        }
+        
+        console.log('✅ FDM: Leads com contagem processados:', resultado.length);
+        return resultado;
+      }
+      
+      // Query simples ORDER BY com LIMIT
+      if (sql.includes('ORDER BY') && sql.includes('LIMIT')) {
+        console.log('🔍 FDM: Query simples com ORDER BY e LIMIT...');
+        
+        const table = sql.includes('leads') ? 'leads' : 
+                     sql.includes('perguntas') ? 'perguntas' : 
+                     sql.includes('mensagens') ? 'mensagens' : 'leads';
+        
+        let query = supabase.from(table).select('*');
+        
+        // Parse LIMIT
+        const limitMatch = sql.match(/LIMIT (\d+)/i);
+        if (limitMatch) {
+          query = query.limit(parseInt(limitMatch[1]));
+        }
+        
+        // Parse ORDER BY
+        if (sql.includes('ORDER BY id DESC')) {
+          query = query.order('id', { ascending: false });
+        } else if (sql.includes('ORDER BY')) {
+          query = query.order('id', { ascending: true });
+        }
+        
+        const { data, error } = await query;
+        
+        if (error) {
+          console.error('❌ FDM: Erro na query simples:', error);
+          throw error;
+        }
+        
+        console.log('✅ FDM: Query simples processada:', data?.length || 0);
+        return data || [];
+      }
+      
       return [];
     },
     

@@ -36,17 +36,15 @@ export async function GET(
       }, { status: 400 });
     }
 
-    const leads = db.prepare('SELECT * FROM leads WHERE id = ?').all(leadId) as Lead[];
+    const lead = await db.prepare('SELECT * FROM leads WHERE id = ?').get([leadId]) as Lead;
     
-    if (leads.length === 0) {
+    if (!lead) {
       return NextResponse.json({
         success: false,
         message: `Lead com ID ${leadId} não encontrado.`,
         suggestion: 'Verifique se o lead existe no sistema'
       }, { status: 404 });
     }
-
-    const lead = leads[0];
 
     // Verificar se os campos obrigatórios existem
     if (!lead.nome || !lead.telefone || !lead.email) {
