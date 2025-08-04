@@ -24,12 +24,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Lead ID é obrigatório' }, { status: 400 });
     }
 
-    const lead = db.prepare('SELECT * FROM leads WHERE id = ?').get(leadId) as Lead | undefined;
+    const leads = await db.prepare('SELECT * FROM leads WHERE id = ?').all([leadId]) as Lead[];
+    const lead = leads[0];
     if (!lead) {
       return NextResponse.json({ error: 'Lead não encontrado' }, { status: 404 });
     }
 
-    const respostas = db.prepare(`
+    const respostas = await db.prepare(`
       SELECT
         r.resposta_usuario,
         p.texto_pergunta,
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
       JOIN perguntas p ON r.pergunta_id = p.id
       WHERE r.lead_id = ?
       ORDER BY p.ordem
-    `).all(leadId) as Resposta[];
+    `).all([leadId]) as Resposta[];
 
     const dadosFormatados = `
 🎯 *NOVO LEAD RECEBIDO!*
@@ -77,10 +78,10 @@ ${respostas.map((r: Resposta, index: number) =>
 
       if (resultadoEnvio) {
         // Atualizar status na tabela leads_finais
-        db.prepare(`
+        await db.prepare(`
           INSERT OR REPLACE INTO leads_finais (lead_id, status)
           VALUES (?, 'enviado_para_atendente')
-        `).run(leadId);
+        `).run([leadId]);
 
         return NextResponse.json({
           success: true,

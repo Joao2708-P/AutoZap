@@ -28,12 +28,12 @@ export async function GET(request: NextRequest) {
 
         query += ' GROUP BY lf.atendente_telefone';
 
-        const atendentes = db.prepare(query).all(...params);
+        const atendentes = await db.prepare(query).all(params);
 
         // Buscar leads detalhados se atendente específico
         let leadsDetalhados: Array<any> = [];
         if (atendente) {
-            leadsDetalhados = db.prepare(`
+            leadsDetalhados = await db.prepare(`
                 SELECT 
                     lf.*,
                     l.nome,
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
                 WHERE lf.atendente_telefone = ?
                 AND DATE(lf.data_envio) = ?
                 ORDER BY lf.data_envio DESC
-            `).all(atendente, data) as Array<any>;
+            `).all([atendente, data]) as Array<any>;
         }
 
         return NextResponse.json({
@@ -78,25 +78,23 @@ export async function POST(request: NextRequest) {
         }
 
         // Atualizar leads para o atendente
-        const stmt = db.prepare(`
-            UPDATE leads_finais 
-            SET atendente_telefone = ?,
-                status = 'enviado_para_atendente',
-                data_envio = ?
-            WHERE lead_id = ?
-        `);
-
         let atualizados = 0;
         for (const leadId of lead_ids) {
-            stmt.run(atendente_telefone, new Date().toISOString(), leadId);
+            await db.prepare(`
+                UPDATE leads_finais 
+                SET atendente_telefone = ?,
+                    status = 'enviado_para_atendente',
+                    data_envio = ?
+                WHERE lead_id = ?
+            `).run([atendente_telefone, new Date().toISOString(), leadId]);
             atualizados++;
         }
 
         // Registrar mensagem
-        db.prepare(`
+        await db.prepare(`
             INSERT INTO mensagens (texto_mensagem, tag, ordermensagem)
             VALUES (?, 'leads_atribuidos', ?)
-        `).run(`${atualizados} leads atribuídos para ${atendente_telefone}`, atualizados);
+        `).run([`${atualizados} leads atribuídos para ${atendente_telefone}`, atualizados]);
 
         return NextResponse.json({
             success: true,
