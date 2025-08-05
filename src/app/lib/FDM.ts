@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { Database, Tables, TablesInsert } from '../../database.types';
+import { Database, Tables, TablesInsert } from '../../../database.types';
 
 // Configuração do Supabase com TypeScript tipado
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://lsmkhaqzizgydlvvyzfx.supabase.co';
@@ -409,55 +409,94 @@ const db = {
       // INSERT OR REPLACE (PostgreSQL não suporta)
       if (sql.includes('INSERT OR REPLACE INTO leads_finais')) {
         console.log('🔍 FDM: INSERT OR REPLACE leads_finais...');
+        console.log('📝 FDM: SQL recebido:', sql);
+        console.log('📋 FDM: Parâmetros recebidos:', params);
         
         // Verificar se é INSERT simples (apenas lead_id e status) ou completo
         if (sql.includes('nome, telefone, email')) {
+          console.log('✅ FDM: Detectado INSERT completo');
           // INSERT completo com todos os campos
           const [leadId, nome, telefone, email, modelo_de_negocio, respostasJson] = params || [];
+          
+          console.log('🔍 FDM: Dados extraídos dos parâmetros:', {
+            leadId, nome, telefone, email, modelo_de_negocio, 
+            respostasJsonLength: respostasJson?.length
+          });
           
           // Status vem hard-coded na query SQL
           const statusMatch = sql.match(/'([^']+)'\s*\)?\s*$/) || ['', 'enviado_para_atendente'];
           const status = statusMatch[1];
+          console.log('📊 FDM: Status extraído:', status);
+          
+          // Validar campos obrigatórios
+          if (!leadId) {
+            throw new Error('Lead ID é obrigatório para INSERT em leads_finais');
+          }
+          
+          const dadosValidados = {
+            lead_id: leadId,
+            nome: nome || 'Nome não informado',
+            telefone: telefone || 'Telefone não informado',
+            email: email || 'Email não informado',
+            modelo_de_negocio: modelo_de_negocio || 'Não informado',
+            respostas_json: respostasJson || '[]',
+            status: status || 'enviado_para_atendente'
+          };
+          
+          console.log('✅ FDM: Dados validados:', dadosValidados);
           
           // Verificar se existe
-          const { data: existing } = await supabase
+          console.log('🔍 FDM: Verificando se lead_id já existe...');
+          const { data: existing, error: existingError } = await supabase
             .from('leads_finais')
             .select('id')
             .eq('lead_id', leadId)
             .single();
           
+          if (existingError && existingError.code !== 'PGRST116') {
+            console.error('❌ FDM: Erro ao verificar existência:', existingError);
+            throw existingError;
+          }
+          
+          console.log('📊 FDM: Lead existente?', existing ? 'Sim' : 'Não');
+          
           if (existing) {
+            console.log('🔄 FDM: Executando UPDATE...');
             // UPDATE completo
             const { error } = await supabase
               .from('leads_finais')
               .update({ 
-                nome,
-                telefone,
-                email,
-                modelo_de_negocio,
-                respostas_json: respostasJson,
-                status 
+                nome: dadosValidados.nome,
+                telefone: dadosValidados.telefone,
+                email: dadosValidados.email,
+                modelo_de_negocio: dadosValidados.modelo_de_negocio,
+                respostas_json: dadosValidados.respostas_json,
+                status: dadosValidados.status
               })
               .eq('lead_id', leadId);
               
-            if (error) throw error;
+            if (error) {
+              console.error('❌ FDM: Erro no UPDATE:', error);
+              throw error;
+            }
+            console.log('✅ FDM: UPDATE executado com sucesso');
           } else {
+            console.log('➕ FDM: Executando INSERT...');
+            console.log('📋 FDM: Dados para INSERT:', dadosValidados);
+            
             // INSERT completo
             const { data, error } = await supabase
               .from('leads_finais')
-              .insert({ 
-                lead_id: leadId,
-                nome,
-                telefone,
-                email,
-                modelo_de_negocio,
-                respostas_json: respostasJson,
-                status 
-              })
+              .insert(dadosValidados)
               .select()
               .single();
               
-            if (error) throw error;
+            if (error) {
+              console.error('❌ FDM: Erro no INSERT:', error);
+              console.error('❌ FDM: Detalhes do erro:', JSON.stringify(error, null, 2));
+              throw error;
+            }
+            console.log('✅ FDM: INSERT executado com sucesso:', data?.id);
           }
         } else {
           // INSERT simples (apenas lead_id e status) - deprecado
@@ -485,7 +524,7 @@ const db = {
           }
         }
         
-        return { changes: 1, lastInsertRowid: leadId };
+        return { changes: 1, lastInsertRowid: params?.[0] || null };
       }
       
       // UPDATE leads_finais

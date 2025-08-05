@@ -7,6 +7,7 @@ interface Lead {
   nome: string;
   telefone: string;
   email: string;
+  modelo_de_negocio: string;
 }
 
 interface Resposta {
@@ -52,14 +53,14 @@ export async function POST(request: NextRequest) {
     console.log('📊 [API] Respostas encontradas:', respostas?.length || 0);
 
     const dadosFormatados = `
-🎯 *NOVO LEAD RECEBIDO!*
+ *NOVO LEAD RECEBIDO!*
 
-👤 *Nome:* ${lead.nome}
-📧 *Email:* ${lead.email}
-📱 *Telefone:* ${lead.telefone}
-📅 *Data:* ${new Date().toLocaleString('pt-BR')}
+ *Nome:* ${lead.nome}
+ *Email:* ${lead.email}
+ *Telefone:* ${lead.telefone}
+ *Data:* ${new Date().toLocaleString('pt-BR')}
 
-📝 *Respostas do Questionário:*
+ *Respostas do Questionário:*
 
 ${respostas.map((r: Resposta, index: number) =>
   `${index + 1}. *${r.texto_pergunta}*\n   Resposta: ${r.resposta_usuario}`
@@ -76,8 +77,8 @@ ${respostas.map((r: Resposta, index: number) =>
 5️⃣ Registre o resultado no sistema
 
 *CONTATO DIRETO:*
-📞 Telefone: ${lead.telefone}
-📧 Email: ${lead.email}
+Telefone: ${lead.telefone}
+ Email: ${lead.email}
     `;
 
     try {
@@ -97,6 +98,15 @@ ${respostas.map((r: Resposta, index: number) =>
           resposta: r.resposta_usuario,
           ordem: r.ordem
         })));
+        
+        console.log('📋 [API] Dados para inserir:', {
+          leadId,
+          nome: lead.nome,
+          telefone: lead.telefone,
+          email: lead.email,
+          modelo_de_negocio: lead.modelo_de_negocio,
+          respostasJson: respostasJson.substring(0, 100) + '...'
+        });
         
         // Inserir todos os dados obrigatórios na tabela leads_finais
         await db.prepare(`
