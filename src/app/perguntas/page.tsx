@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import styles from './styles/questions.module.css';
 
 interface Pergunta {
@@ -17,7 +17,7 @@ interface Resposta {
 const QuestionsContent = () => {
   const searchParams = useSearchParams();
   const leadId = searchParams.get('lead_id');
-
+  const router = useRouter();
   const [perguntas, setPerguntas] = useState<Pergunta[]>([]);
   const [respostas, setRespostas] = useState<Resposta[]>([]);
   const [loading, setLoading] = useState(true);
@@ -126,6 +126,7 @@ const QuestionsContent = () => {
         console.log('✅ Lead enviado para atendentes com sucesso');
         setMessage('Respostas enviadas com sucesso! Entraremos em contato em breve.');
         setRespostas([]);
+        router.push('/simulacao')
       } else {
         console.error('❌ Erro ao enviar para atendentes');
         setMessage('Respostas salvas, mas erro ao notificar atendentes');
