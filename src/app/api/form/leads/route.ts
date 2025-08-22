@@ -38,10 +38,34 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Normalização
+        const nomeTrim = String(nome).trim();
+        const emailTrim = String(email).trim();
+        const modeloTrim = String(modelo_de_negocio).trim();
+        const telefoneDigits = String(telefone).replace(/\D/g, '');
+
+        // Regras simples
+        if (nomeTrim.length < 3) {
+            return NextResponse.json({ message: 'Nome deve ter pelo menos 3 caracteres' }, { status: 400 });
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(emailTrim)) {
+            return NextResponse.json({ message: 'Email inválido' }, { status: 400 });
+        }
+
+        if (telefoneDigits.length < 10 || telefoneDigits.length > 13) {
+            return NextResponse.json({ message: 'Telefone deve ter entre 10 e 13 dígitos' }, { status: 400 });
+        }
+
+        if (modeloTrim.length < 3) {
+            return NextResponse.json({ message: 'Modelo de negócio deve ter pelo menos 3 caracteres' }, { status: 400 });
+        }
+
         console.log('💾 Inserindo lead no banco...');
         
         // Verificar se o email já existe
-        const leadExistente = await db.prepare('SELECT id FROM leads WHERE email = $1').get([email]);
+        const leadExistente = await db.prepare('SELECT id FROM leads WHERE email = $1').get([emailTrim]);
         if (leadExistente) {
             console.log('⚠️ Email já cadastrado:', email);
             return NextResponse.json(
@@ -52,7 +76,7 @@ export async function POST(request: NextRequest) {
 
         const novoLead = await db.prepare(
             'INSERT INTO leads (nome, telefone, email, modelo_de_negocio) VALUES ($1, $2, $3, $4) RETURNING id'
-        ).run([nome, telefone, email, modelo_de_negocio]);
+        ).run([nomeTrim, telefoneDigits, emailTrim, modeloTrim]);
 
         console.log('✅ Lead criado com sucesso! ID:', novoLead.lastInsertRowid);
 

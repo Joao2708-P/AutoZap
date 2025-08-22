@@ -1,17 +1,23 @@
-import { createClient } from '@supabase/supabase-js';
-import { Database, Tables, TablesInsert } from '../../../database.types';
-
-// Configuração do Supabase com TypeScript tipado
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://lsmkhaqzizgydlvvyzfx.supabase.co';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-
-const supabase = createClient<Database>(supabaseUrl, supabaseKey);
+import { TablesInsert } from '../../../database.types';
+import supabase from './supabase';
 
 // Wrapper para compatibilidade com o código existente
 const db = {
   // Método para SELECT com parâmetros
   prepare: (sql: string) => ({
     get: async (params?: any[]) => {
+      // SELECT pergunta específica por id e ativa = 1
+      if (sql.includes('SELECT * FROM perguntas WHERE id') && sql.includes('ativa = 1')) {
+        const perguntaId = params?.[0];
+        const { data, error } = await supabase
+          .from('perguntas')
+          .select('*')
+          .eq('id', perguntaId)
+          .eq('ativa', true)
+          .single();
+        if (error && error.code !== 'PGRST116') throw error;
+        return data;
+      }
       // Converter SQL para operação Supabase
       if (sql.includes('SELECT * FROM leads')) {
         const { data, error } = await supabase.from('leads').select('*').limit(1).single();
@@ -338,6 +344,29 @@ const db = {
     },
     
     run: async (params?: any[]) => {
+      // UPDATE respostas
+      if (sql.includes('UPDATE respostas SET resposta_usuario') && sql.includes('WHERE pergunta_id =') && sql.includes('AND lead_id =')) {
+        const [respostaUsuario, perguntaId, leadId] = params || [];
+        const { error } = await supabase
+          .from('respostas')
+          .update({ resposta_usuario: respostaUsuario })
+          .eq('pergunta_id', perguntaId)
+          .eq('lead_id', leadId);
+        if (error) throw error;
+        return { changes: 1, lastInsertRowid: null };
+      }
+
+      // INSERT respostas
+      if (sql.includes('INSERT INTO respostas') && sql.includes('(pergunta_id, lead_id, resposta_usuario)')) {
+        const [perguntaId, leadId, respostaUsuario] = params || [];
+        const { data, error } = await supabase
+          .from('respostas')
+          .insert({ pergunta_id: perguntaId, lead_id: leadId, resposta_usuario: respostaUsuario })
+          .select()
+          .single();
+        if (error) throw error;
+        return { changes: 1, lastInsertRowid: data?.id || null };
+      }
       // Converter SQL para operação Supabase tipada
       if (sql.includes('INSERT INTO leads')) {
         const [nome, telefone, email, modelo_de_negocio] = params || [];

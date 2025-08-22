@@ -44,6 +44,14 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        const respostaTrim = (resposta_usuario ?? '').toString().trim();
+        if (!respostaTrim) {
+            return NextResponse.json(
+                { message: 'Resposta do usuário é obrigatória' },
+                { status: 400 }
+            );
+        }
+
         // Verificar se a pergunta existe e está ativa
         console.log('🔍 Verificando pergunta...');
         const pergunta = db.prepare('SELECT * FROM perguntas WHERE id = ? AND ativa = 1').get(pergunta_id);
@@ -79,7 +87,7 @@ export async function POST(request: NextRequest) {
             // Atualizar resposta existente
             resultado = db.prepare(
                 'UPDATE respostas SET resposta_usuario = ?, updated_at = CURRENT_TIMESTAMP WHERE pergunta_id = ? AND lead_id = ?'
-            ).run(resposta_usuario, pergunta_id, lead_id);
+            ).run(respostaTrim, pergunta_id, lead_id);
             
             console.log('✅ Resposta atualizada com sucesso');
         } else {
@@ -87,7 +95,7 @@ export async function POST(request: NextRequest) {
             // Criar nova resposta
             resultado = db.prepare(
                 'INSERT INTO respostas (pergunta_id, lead_id, resposta_usuario) VALUES (?, ?, ?)'
-            ).run(pergunta_id, lead_id, resposta_usuario);
+            ).run(pergunta_id, lead_id, respostaTrim);
             
             console.log('✅ Nova resposta criada com sucesso');
         }

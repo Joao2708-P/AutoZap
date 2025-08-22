@@ -1,9 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
-import { Database } from '../../database.types';
+import { Database } from '../../../database.types';
 
 // Configuração otimizada do Supabase seguindo as melhores práticas
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  const missing = [
+    !supabaseUrl ? 'NEXT_PUBLIC_SUPABASE_URL' : null,
+    !supabaseAnonKey ? 'NEXT_PUBLIC_SUPABASE_ANON_KEY' : null
+  ].filter(Boolean).join(', ');
+  throw new Error(`Variáveis de ambiente do Supabase ausentes: ${missing}`);
+}
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {

@@ -81,6 +81,17 @@
   transition: background-color 0.3s ease;
 }
 
+/* Estados de erro de validação */
+.inputError {
+  border-color: #d32f2f;
+}
+
+.errorText {
+  color: #d32f2f;
+  font-size: 0.875rem;
+  margin-top: 6px;
+}
+
 @media (max-width: 798px)  {
   .content {
     width: 80%;

@@ -23,6 +23,7 @@ const QuestionsContent = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
+  const [errors, setErrors] = useState<Record<number, string>>({});
 
   useEffect(() => {
     console.log('🔄 Frontend: useEffect executado, leadId:', leadId);
@@ -75,12 +76,34 @@ const QuestionsContent = () => {
         return [...prev, { pergunta_id: perguntaId, resposta_usuario: resposta }];
       }
     });
+
+    // validação simples por campo
+    const trimmed = resposta.trim();
+    setErrors(prev => ({
+      ...prev,
+      [perguntaId]: trimmed.length === 0 ? 'Resposta é obrigatória' : ''
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setMessage('');
+
+    // validação geral: todas as perguntas exibidas precisam ter resposta não vazia
+    const missing: Record<number, string> = {};
+    for (const p of perguntas) {
+      const r = respostas.find(x => x.pergunta_id === p.id)?.resposta_usuario?.trim() || '';
+      if (!r) {
+        missing[p.id] = 'Resposta é obrigatória';
+      }
+    }
+    if (Object.keys(missing).length > 0) {
+      setErrors(missing);
+      setSubmitting(false);
+      setMessage('Preencha todas as respostas obrigatórias.');
+      return;
+    }
 
     try {
       console.log('🚀 Iniciando envio de respostas...');
@@ -188,6 +211,9 @@ const QuestionsContent = () => {
                   onChange={(e) => handleRespostaChange(pergunta.id, e.target.value)}
                   required
                 />
+                {!!errors[pergunta.id] && (
+                  <span className={styles.error}>{errors[pergunta.id]}</span>
+                )}
               </div>
             ))}
             
